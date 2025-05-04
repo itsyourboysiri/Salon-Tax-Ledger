@@ -88,15 +88,8 @@ const IncomeTaxReview = () => {
 
                 console.log("Backend response:", result);
 
-                const paymentData = {
-                    name:name,
-                    username:username,
-                    tinNumber : tinNumber,
-                    totalTaxPayable : data.balancePayable,
-                    submissionId:result.submissionId,
-                    salonName:salonName,
-                }
-                navigate("/taxpayment", { state: { paymentData } });
+                
+                navigate("/taxview");
             } else {
                 alert("Submission failed. Try again.");
             }
@@ -219,10 +212,7 @@ const IncomeTaxReview = () => {
                             <span className="w-44 font-semibold">Taxable Income:</span>
                             <span>{formatCurrency(data.taxableIncome)}</span>
                         </div>
-                        <div className="flex gap-x-2 justify-end">
-                            <span className="w-44 text-right font-semibold">APIT:</span>
-                            <span>{formatCurrency(data.apit)}</span>
-                        </div>
+                       
                     </div>
 
                     <div className="mt-6 text-center text-[#620F28] text-base">

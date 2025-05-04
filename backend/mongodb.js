@@ -6,7 +6,7 @@ async function connectDB() {
   try {
     await mongoose.connect(uri, {
       useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // useUnifiedTopology: true,
     });
     console.log("MongoDB connected successfully via Mongoose");
   } catch (err) {

@@ -32,8 +32,10 @@ const taxFormSchema = new mongoose.Schema({
   reliefEntries: Array,
   taxCreditsData: Object,
   paymentId: String,
+  status:String,
 
   submittedAt: Date,
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model("TaxForm_collection", taxFormSchema);
+// Use consistent model name
+module.exports = mongoose.models.taxform_collections || mongoose.model('taxform_collections', taxFormSchema);
