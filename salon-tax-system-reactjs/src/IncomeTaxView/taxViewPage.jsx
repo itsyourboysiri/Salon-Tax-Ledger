@@ -3,6 +3,7 @@ import TaxSubmissionTable from "./IncomeTaxViewTable";
 import Navbar from "../components/navbar/navbar";
 import handleDownloadPDF from "./IncomeTaxPDFDoc";
 import CustomYearMonthPicker from "../components/yearAndMonthPicker";
+import OngoingPaymentsTable from "../Payments/onGoingPaymentTable";
 
 // Get current date as YYYY-MM
 const getCurrentYearMonth = () => {
@@ -12,6 +13,7 @@ const getCurrentYearMonth = () => {
 
 const TaxViewPage = () => {
   const [taxFormList, setTaxFormList] = useState([]);
+  const [paymentStatusMap, setPaymentStatusMap] = useState({});
 
   const defaultDate = getCurrentYearMonth(); // default date
   const [selectedDate, setSelectedDate] = useState(defaultDate);
@@ -29,12 +31,52 @@ const TaxViewPage = () => {
 
       if (response.ok) {
         setTaxFormList(data);
+        fetchPaymentStatuses(data); // Fetch payments immediately after submissions
       } else {
         console.error("Failed to fetch tax submissions:", data.message);
       }
     } catch (err) {
       console.error("Error fetching tax data:", err);
     }
+  };
+
+  const fetchPaymentStatuses = async (submissions) => {
+    const statuses = {};
+
+    for (const entry of submissions) {
+      if (entry.paymentId) {
+        try {
+          const res = await fetch(`http://localhost:5000/api/users/payment/${entry.paymentId}`);
+          const paymentData = await res.json();
+
+          if (res.ok && paymentData) {
+            const isFullyPaid = paymentData.amountPaid >= (entry.balancePayable || 0);
+            statuses[entry._id] = {
+              isFullyPaid,
+              amountPaid: paymentData.amountPaid,
+            };
+          } else {
+            statuses[entry._id] = {
+              isFullyPaid: false,
+              amountPaid: 0,
+            };
+          }
+        } catch (error) {
+          console.error("Error fetching payment info for:", entry.paymentId);
+          statuses[entry._id] = {
+            isFullyPaid: false,
+            amountPaid: 0,
+          };
+        }
+      } else {
+        statuses[entry._id] = {
+          isFullyPaid: false,
+          amountPaid: 0,
+        };
+      }
+    }
+
+    setPaymentStatusMap(statuses);
   };
 
   useEffect(() => {
@@ -89,9 +131,16 @@ const TaxViewPage = () => {
           )}
         </div>
 
+        {/* First Table - Past Submissions */}
         <TaxSubmissionTable
           submissions={filteredList}
           onDownload={handleDownloadPDF}
+        />
+
+        {/* Second Table - Ongoing Payments */}
+        <OngoingPaymentsTable
+          submissions={filteredList}
+          paymentStatusMap={paymentStatusMap}
         />
       </div>
     </>

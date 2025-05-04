@@ -16,6 +16,15 @@ import PayNowPage from "./Payments/paymentPage";
 import PaymentSuccess from "./Payments/paymentSuccess";
 import UserProfilePage from "./components/userprofile/userprofile";
 import QuarterlyPaymentsPage from "./Payments/quarterlyPaymentPage";
+import Dashboard from "./AdminPanel/adminHome";
+import ProfileSection from "./AdminPanel/profilePage";
+import TaxInformation from "./AdminPanel/taxInformationPage";
+import AdminHome from "./AdminPanel/adminHome";
+import UsersPage from "./AdminPanel/usersPage";
+import PaymentHistoryPage from "./Payments/paymentHistoryPage";
+import AdminPaymentsPage from "./AdminPanel/adminPaymentPage";
+import TaxChartPage from "./reports/reportPage";
+import ReportPage from "./AdminPanel/adminReportPage";
 
 
 function App() {
@@ -25,7 +34,7 @@ function App() {
     <BrowserRouter>
      
      <Routes>
-        <Route path="/" element={<UserLogin  />} />
+        <Route path="/" element={<UserLogin />} />
           <Route path="/homepage" element={<HomePage />} />
           <Route path="/signup" element={<UserRegistrationForm />} />
           <Route path="/taxform" element={<IncomeTaxForm />} />
@@ -35,6 +44,15 @@ function App() {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/userprofile" element={<UserProfilePage />} />
           <Route path="/quarterly-payments/:submissionId" element={<QuarterlyPaymentsPage />} />
+          <Route path="/admin-editprofile" element={<ProfileSection />} />
+          <Route path="/admin-taxinformation" element={<TaxInformation />} />
+          <Route path="/admin-home" element={<AdminHome />} />
+          <Route path="/admin-users" element={<UsersPage />} />
+          <Route path="/payment-history" element={<PaymentHistoryPage />} />
+          <Route path="/admin-payments" element={<AdminPaymentsPage/>} />
+          <Route path="/taxgraphs" element={<TaxChartPage/>} />
+          <Route path="/admin-taxgraphs" element={<ReportPage/>} />
+
           
       </Routes>
     </BrowserRouter>

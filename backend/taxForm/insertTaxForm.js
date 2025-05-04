@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const TaxForm = require('./taxForm Modal/taxFormModal'); 
-
+const TaxForm = require('./taxForm Modal/TaxFormModal'); // adjust path to your model
 router.post('/insertTaxform', async (req, res) => {
   try {
     const formData = req.body;

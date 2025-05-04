@@ -8,8 +8,7 @@ import ForeignIncome from './TaxForm Components/foriegnIncome';
 import QualifyingPayments from './TaxForm Components/qaulifyingPayments';
 import TaxLiability from './TaxForm Components/taxLiable';
 import Navbar from '../navbar/navbar';
-import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const IncomeTaxForm = () => {
   const [totalBusinessIncome, setTotalBusinessIncome] = useState(0);
@@ -20,10 +19,8 @@ const IncomeTaxForm = () => {
   const [totalRelief, setTotalRelief] = useState(0);
   const [totalDonations, setTotalDonations] = useState(0);
   const [withHoldingTax, setWithHoldingTax] = useState(0);
-
   const [finalPayment, setFinalPayment] = useState(0);
   const [totalTaxLiable, setTotalTaxLiable] = useState(0);
-
   const [capitalGainIncome, setCapitalGainIncome] = useState(0);
 
   const [employeeIncomeEntries, setEmployeeIncomeEntries] = useState([]);
@@ -34,10 +31,9 @@ const IncomeTaxForm = () => {
   const [qualifyingPaymentsEntries, setQualifyingPaymentsEntries] = useState([]);
   const [reliefEntries, setReliefEntries] = useState([]);
   const [taxCreditsData, setTaxCreditsData] = useState({});
-  
-  //repopulating the fields after redirecting to the tax review page
+
   const location = useLocation();
-const taxData = location?.state?.taxData;
+  const taxData = location?.state?.taxData;
 
   const username = sessionStorage.getItem('username');
   const name = sessionStorage.getItem('name');
@@ -46,7 +42,6 @@ const taxData = location?.state?.taxData;
 
   const navigate = useNavigate();
 
-
   const assessableIncome =
     totalBusinessIncome +
     totalEmployeeIncome +
@@ -54,54 +49,42 @@ const taxData = location?.state?.taxData;
     totalForeignIncome +
     totalInvestmentIncome;
 
-
   const totalDeductions = totalRelief + totalDonations;
-
   const taxableIncome = Math.max(assessableIncome - totalDeductions, 0);
 
-  // const installment = withHoldingTax / 4;
+  // const calculateMonthlyAPIT = (monthlyIncome) => {
+  //   let tax = 0;
+  //   const brackets = [
+  //     { limit: 100000, rate: 0 },
+  //     { limit: 141667, rate: 0.06 },
+  //     { limit: 183333, rate: 0.12 },
+  //     { limit: 225000, rate: 0.18 },
+  //     { limit: 266667, rate: 0.24 },
+  //     { limit: 308333, rate: 0.30 },
+  //   ];
+  //   let remaining = monthlyIncome;
+  //   let previousLimit = 0;
 
-  const calculateMonthlyAPIT = (monthlyIncome) => {
-    let tax = 0;
+  //   for (let i = 0; i < brackets.length; i++) {
+  //     const { limit, rate } = brackets[i];
+  //     if (monthlyIncome <= limit) {
+  //       tax += remaining * rate;
+  //       return tax;
+  //     }
+  //     const taxableAmount = limit - previousLimit;
+  //     tax += taxableAmount * rate;
+  //     remaining -= taxableAmount;
+  //     previousLimit = limit;
+  //   }
 
-    const brackets = [
-      { limit: 100000, rate: 0 },
-      { limit: 141667, rate: 0.06 },
-      { limit: 183333, rate: 0.12 },
-      { limit: 225000, rate: 0.18 },
-      { limit: 266667, rate: 0.24 },
-      { limit: 308333, rate: 0.30 },
-    ];
+  //   tax += remaining * 0.36;
+  //   return tax;
+  // };
 
-    let remaining = monthlyIncome;
-    let previousLimit = 0;
-
-    for (let i = 0; i < brackets.length; i++) {
-      const { limit, rate } = brackets[i];
-
-      if (monthlyIncome <= limit) {
-        tax += (remaining) * rate;
-        return tax;
-      }
-
-      const taxableAmount = limit - previousLimit;
-      tax += taxableAmount * rate;
-      remaining -= taxableAmount;
-      previousLimit = limit;
-    }
-
-    // Apply 36% for remaining income above the top slab
-    tax += remaining * 0.36;
-    return tax;
-  };
-
-  const monthlyEmployeeIncome = totalEmployeeIncome / 12;
-  const apit = calculateMonthlyAPIT(monthlyEmployeeIncome) ;
-
-  const totalTaxPaid = withHoldingTax  + apit;
-
+  // const monthlyEmployeeIncome = totalEmployeeIncome / 12;
+  // const apit = calculateMonthlyAPIT(monthlyEmployeeIncome);
+  const totalTaxPaid = withHoldingTax 
   const balancePayable = totalTaxLiable - totalTaxPaid;
-
   const quarterlyInstallment = (balancePayable / 4).toFixed(2);
 
   const fullTaxFormData = {
@@ -114,37 +97,26 @@ const taxData = location?.state?.taxData;
     taxableIncome,
     totalTaxLiable,
     withHoldingTax,
-    // installment,
-    apit,
+    // apit,
     totalTaxPaid,
     balancePayable,
     finalPayment,
-
-    // Income details
     totalBusinessIncome,
     totalEmployeeIncome,
     totalOtherIncome,
     totalForeignIncome,
     totalInvestmentIncome,
-
-    // Entries (for detailed view)
     employeeIncomeEntries,
     businessIncomeEntries,
     investmentIncomeEntries,
     otherIncomeEntries,
     foreignIncomeEntries,
-
-    // Deductions
     qualifyingPaymentsEntries,
     reliefEntries,
     taxCreditsData,
-
-    submittedAt: new Date().toISOString(), // optional for backend tracking
-    quarterlyInstallment
+    submittedAt: new Date().toISOString(),
+    quarterlyInstallment,
   };
-
- 
-  
 
   useEffect(() => {
     if (taxData) {
@@ -159,8 +131,6 @@ const taxData = location?.state?.taxData;
       setTotalTaxLiable(taxData.totalTaxLiable);
       setFinalPayment(taxData.finalPayment);
       setCapitalGainIncome(taxData.capitalGainIncome);
-  
-      // Rehydrate entries
       setEmployeeIncomeEntries(taxData.employeeIncomeEntries || []);
       setBusinessIncomeEntries(taxData.businessIncomeEntries || []);
       setInvestmentIncomeEntries(taxData.investmentIncomeEntries || {});
@@ -171,38 +141,39 @@ const taxData = location?.state?.taxData;
       setTaxCreditsData(taxData.taxCreditsData || {});
     }
   }, [taxData]);
-  
- 
-  
 
+  useEffect(() => {
+    if (sessionStorage.getItem("resetForm") === "true") {
+      resetForm();
+      sessionStorage.removeItem("resetForm");
+    }
+  }, []);
 
-
-
-
-
-
-
-  // console.log("Username:", username)
-  // console.log("Name:", name)
-  // console.log("Salon name:", salonName)
-  // console.log("Tin number:", tinNumber)
-
-
-  // console.log("Business income:", totalBusinessIncome);
-  // console.log("Employee income:", totalEmployeeIncome);
-  // console.log("Investment income:", totalInvestmentIncome);
-  // console.log("Other income:", totalOtherIncome);
-  // console.log("Foreign income:", totalForeignIncome);
-  // console.log("Total Relief income:", totalRelief);
-  // console.log("Qualifying payment income:", totalDonations);
-  // console.log("assessable income:", assessableIncome);
-  // console.log("Taxable income:", taxableIncome);
-  // console.log("Taxable Payable:", balancePayable);
-
-  const handleSubmitTaxForm = async () => {
-    navigate("/taxreview", { state: { taxData: fullTaxFormData } });
+  const resetForm = () => {
+    setTotalBusinessIncome(0);
+    setTotalEmployeeIncome(0);
+    setTotalOtherIncome(0);
+    setTotalForeignIncome(0);
+    setTotalInvestmentIncome(0);
+    setTotalRelief(0);
+    setTotalDonations(0);
+    setWithHoldingTax(0);
+    setFinalPayment(0);
+    setTotalTaxLiable(0);
+    setCapitalGainIncome(0);
+    setEmployeeIncomeEntries([]);
+    setBusinessIncomeEntries([]);
+    setInvestmentIncomeEntries({});
+    setOtherIncomeEntries([]);
+    setForeignIncomeEntries([]);
+    setQualifyingPaymentsEntries([]);
+    setReliefEntries([]);
+    setTaxCreditsData({});
   };
 
+  const handleSubmitTaxForm = () => {
+    navigate("/taxreview", { state: { taxData: fullTaxFormData } });
+  };
 
   return (
     <>
@@ -220,13 +191,8 @@ const taxData = location?.state?.taxData;
           setInvestmentIncomeEntries={setInvestmentIncomeEntries}
           setCapitalGainincome={setCapitalGainIncome}
         />
-
         <OtherIncome otherIncomeSum={setTotalOtherIncome} setOtherIncomeEntries={setOtherIncomeEntries} />
-
         <ForeignIncome foriegnIncomeSum={setTotalForeignIncome} setForeignIncomeEntries={setForeignIncomeEntries} />
-
-
-
         <div className="flex flex-col">
           <label className="text-gray-700 font-medium mb-1">Assessable Income</label>
           <div className="flex items-center mt-1 border border-gray-300 rounded-md overflow-hidden">
@@ -236,24 +202,20 @@ const taxData = location?.state?.taxData;
               type="text"
               className="flex-1 px-3 py-2 bg-gray-100 text-gray-800 font-medium cursor-not-allowed focus:outline-none"
               readOnly
-              value={`LKR ${assessableIncome.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}`}
+              value={`LKR ${assessableIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
             />
           </div>
         </div>
 
         <QualifyingPayments totalDonationsSum={setTotalDonations} setQualifyingPaymentsEntries={setQualifyingPaymentsEntries} />
-
         <ReliefPayments reliefPaymentSum={setTotalRelief} setReliefEntries={setReliefEntries} />
-
         <TaxLiability taxableIncome={taxableIncome} setTaxLiable={setTotalTaxLiable} setTaxCreditsData={setTaxCreditsData} capitalGainincome={capitalGainIncome} />
 
         <div className="flex justify-center pt-4">
           <button
             type="button"
             className="bg-[#986611] text-white px-6 py-3 rounded-md hover:bg-[#684E12] transition text-lg font-semibold"
-            onClick={handleSubmitTaxForm} // Make sure you define this function
+            onClick={handleSubmitTaxForm}
           >
             Submit Tax Form
           </button>
