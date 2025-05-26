@@ -11,6 +11,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import Navbar from "../components/navbar/navbar";
+import * as htmlToImage from 'html-to-image';
+import { jsPDF } from 'jspdf';
 
 ChartJS.register(
   LineElement,
@@ -88,14 +91,14 @@ const TaxPayableChart = ({ data }) => {
           {
             label: "Tax Paid",
             data: getFilteredData().map((item) => item.totalTaxPaid),
-            backgroundColor: "#3B82F6",
+            backgroundColor: "#620F28 ",
           },
           {
             label: "Remaining Payable",
             data: getFilteredData().map(
               (item) => item.totalTaxPayable - item.totalTaxPaid
             ),
-            backgroundColor: "#F87171",
+            backgroundColor: "#DAA520",
           },
         ]
       : [
@@ -123,23 +126,9 @@ const TaxPayableChart = ({ data }) => {
         display: true,
         text: summaryMode ? "📊 Tax Summary Report" : "📈 Tax Payable Over Time",
         font: { size: 20, weight: "bold" },
-        color: "#1F2937",
+        color: "#380817",
       },
-      tooltip: {
-        callbacks: summaryMode
-          ? {
-              afterBody: (ctx) => {
-                const i = ctx[0].dataIndex;
-                const src = getFilteredData()[i]?.incomeSources || {};
-                return [
-                  `Employment: LKR ${src.employment || 0}`,
-                  `Business: LKR ${src.business || 0}`,
-                  `Foreign: LKR ${src.foreign || 0}`,
-                ];
-              },
-            }
-          : {},
-      },
+      
     },
     scales: {
       x: {
@@ -157,7 +146,10 @@ const TaxPayableChart = ({ data }) => {
     },
   };
 
+  
   return (
+
+   
     <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-6xl mx-auto border border-red-100">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 flex-wrap">
         <div className="flex gap-3 flex-wrap">
@@ -181,7 +173,7 @@ const TaxPayableChart = ({ data }) => {
 
           <button
             onClick={() => setSummaryMode(!summaryMode)}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md transition"
+            className="px-4 py-2 bg-red-800 hover:bg-red-900 text-white font-semibold rounded-md transition"
           >
             {summaryMode ? "View Trend Chart" : "View Summary Report"}
           </button>
@@ -204,37 +196,7 @@ const TaxPayableChart = ({ data }) => {
             ))}
           </select>
 
-          <select
-            className="px-2 py-2 border rounded-md shadow-sm text-sm"
-            value={yearRange.from}
-            onChange={(e) => {
-              setYearRange((prev) => ({ ...prev, from: e.target.value }));
-              setSelectedYear(""); // clear single year
-            }}
-          >
-            <option value="">From</option>
-            {availableYears.map((year) => (
-              <option key={`from-${year}`} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="px-2 py-2 border rounded-md shadow-sm text-sm"
-            value={yearRange.to}
-            onChange={(e) => {
-              setYearRange((prev) => ({ ...prev, to: e.target.value }));
-              setSelectedYear(""); // clear single year
-            }}
-          >
-            <option value="">To</option>
-            {availableYears.map((year) => (
-              <option key={`to-${year}`} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+         
         </div>
       </div>
 
@@ -251,7 +213,9 @@ const TaxPayableChart = ({ data }) => {
               key={index}
               className="p-4 border rounded-lg shadow-sm"
               style={{
+                border: "1px solid #986611",
                 borderLeft: `6px solid ${statusColors[item.status] || "#D1D5DB"}`,
+               
               }}
             >
               <h3 className="font-bold text-gray-800">{item.name}</h3>
@@ -263,17 +227,14 @@ const TaxPayableChart = ({ data }) => {
                 <strong>Status:</strong>{" "}
                 <span className="capitalize">{item.status}</span>
               </p>
-              <p className="mt-2 text-sm text-gray-500">
-                Income Sources:<br />
-                - Employment: LKR {item.incomeSources?.employment || 0}<br />
-                - Business: LKR {item.incomeSources?.business || 0}<br />
-                - Foreign: LKR {item.incomeSources?.foreign || 0}
-              </p>
+             
             </div>
           ))}
         </div>
       )}
     </div>
+
+    
   );
 };
 

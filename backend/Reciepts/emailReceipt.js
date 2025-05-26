@@ -32,7 +32,7 @@ router.post('/send-receipt', async (req, res) => {
         service: 'gmail',
         auth: {
           user: 'asiri.karunachandra@gmail.com',
-          pass: 'jikv dfbf tatv qpyn',
+          pass: 'qxiy apjh xlsn cecj',
         },
       });
 

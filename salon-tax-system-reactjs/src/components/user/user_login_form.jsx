@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { alert } from '../AlertBoxes/alertBox';
 
 function UserLoginForm() {
     const [userLoginData, setUserLoginData] = useState({ username: '', password: '' });
@@ -34,9 +35,8 @@ function UserLoginForm() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    setServerMessage('Login successful! Redirecting...');
 
-                    const { username, name, salonName, tinNumber,email } = data.user;
+                    const { username, name, salonName, tinNumber, email, photo } = data.user;
 
                     //store username in the session     
                     // ✅ Store in sessionStorage
@@ -45,19 +45,21 @@ function UserLoginForm() {
                     sessionStorage.setItem('salonName', salonName);
                     sessionStorage.setItem('tinNumber', tinNumber);
                     sessionStorage.setItem('email', email);
+                    sessionStorage.setItem('photo', `http://localhost:5000/api/users${photo}` || '');
 
 
                     setTimeout(() => {
+                        alert.success("Login Successfull")
                         navigate("/homepage")
                     }, 1500
 
                     )
 
                 } else {
-                    setServerMessage(data.message || 'Invalid username or password');
+                    alert.error(data.message || 'Invalid username or password');
                 }
             } catch (error) {
-                setServerMessage('Server error. Please try again later.');
+                alert.error('Server error. Please try again later.');
             }
         }
     };
@@ -65,48 +67,93 @@ function UserLoginForm() {
     return (
 
         <div className="bg-opacity-30 backdrop-blur-lg p-8 sm:p-10 rounded-lg shadow-lg w-full max-w-md sm:max-w-lg ml-6 sm:ml-12">
-            <div className="flex justify-center ">
-                <img src="/logo.png" alt="Logo" className="w-80 sm:w-80" />
-            </div>
-            <h2 className="text-xl sm:text-3xl font-semibold text-center text-white ">User Login</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-6">
-                    <label className="block text-white mb-2 text-base sm:text-lg">Username</label>
-                    <input
-                        type="text"
-                        name="username"
-                        value={userLoginData.username}
-                        onChange={handleChange}
-                        className="w-full px-5 py-3 bg-transparent border border-white text-white rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base sm:text-lg"
-                    />
-                    {errors.username && <p className="text-red-500 text-sm sm:text-base mt-1">{errors.username}</p>}
-                </div>
-                <div className="mb-6">
-                    <label className="block text-white mb-2 text-base sm:text-lg">Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={userLoginData.password}
-                        onChange={handleChange}
-                        className="w-full px-5 py-3 bg-transparent border border-white text-white rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base sm:text-lg"
-                    />
-                    {errors.password && <p className="text-red-500 text-sm sm:text-base mt-1">{errors.password}</p>}
-                </div>
-                <button
-                    type="submit"
-                    className="w-full bg-yellow-400 text-black font-bold py-3 rounded-full hover:bg-yellow-500 transition text-base sm:text-lg"
-                >
-                    Submit
-                </button>
-            </form>
-            {serverMessage && <p className="text-white text-center mt-4">{serverMessage}</p>}
-            <p
-                className="text-white text-center mt-6 text-base sm:text-lg cursor-pointer hover:underline"
-                onClick={() => navigate('/signup')}
-            >
-                Create an account
-            </p>
+    <div className="flex justify-center"></div>
+    <h2 className="text-xl sm:text-3xl font-semibold text-center text-white">User Login</h2>
+    <form onSubmit={handleSubmit}>
+        <div className="mb-6">
+            <label className="block text-white mb-2 text-base sm:text-lg">Username</label>
+            <input
+                type="text"
+                name="username"
+                value={userLoginData.username}
+                onChange={handleChange}
+                className="w-full px-5 py-3 bg-transparent border border-white text-white rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base sm:text-lg"
+            />
+            {errors.username && <p className="text-red-500 text-sm sm:text-base mt-1">{errors.username}</p>}
         </div>
+        <div className="mb-6">
+            <label className="block text-white mb-2 text-base sm:text-lg">Password</label>
+            <input
+                type="password"
+                name="password"
+                value={userLoginData.password}
+                onChange={handleChange}
+                className="w-full px-5 py-3 bg-transparent border border-white text-white rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base sm:text-lg"
+            />
+            {errors.password && <p className="text-red-500 text-sm sm:text-base mt-1">{errors.password}</p>}
+        </div>
+        <button
+            type="submit"
+            className="
+                w-full 
+                py-3 
+                rounded-full 
+                font-bold
+                text-black
+                bg-gradient-to-r from-yellow-400 to-yellow-600
+                hover:from-yellow-500 hover:to-yellow-700
+                shadow-lg
+                hover:shadow-yellow-500/50
+                transition-all
+                duration-300
+                hover:scale-[1.02]
+                relative
+                overflow-hidden
+                group
+                text-base sm:text-lg
+            "
+        >
+            <span className="relative z-10">Login</span>
+            <span className="
+                absolute inset-0
+                bg-gradient-to-r from-yellow-500 to-yellow-700
+                opacity-0
+                group-hover:opacity-100
+                transition-opacity
+                duration-300
+                rounded-full
+            "></span>
+        </button>
+    </form>
+  
+    <div className="mt-6 flex flex-col items-center">
+        <p className="text-white text-center mb-3 text-base sm:text-lg">
+            Don't have an account?
+        </p>
+        <button
+            onClick={() => navigate('/signup')}
+            className="
+                w-full
+                px-6 py-2
+                font-bold
+                text-yellow-400
+                border-2 border-yellow-400
+                rounded-full
+                hover:bg-yellow-400/10
+                hover:text-yellow-300
+                hover:border-yellow-300
+                transition-all
+                duration-300
+                hover:scale-[1.02]
+                shadow-md
+                hover:shadow-yellow-400/30
+                text-base sm:text-lg
+            "
+        >
+            Create an account
+        </button>
+    </div>
+</div>
 
     );
 }

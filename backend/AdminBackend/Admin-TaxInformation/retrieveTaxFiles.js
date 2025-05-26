@@ -1,7 +1,7 @@
 // In your admin routes file (assuming it's something like adminRoutes.js)
 const express = require('express');
 const router = express.Router();
-const TaxForm = require('../../taxForm/taxForm Modal/taxFormModal'); // Adjust this path if needed
+const TaxForm = require('../../taxForm/taxForm Modal/TaxFormModal'); // Adjust this path if needed
 
 // GET all tax submissions
 router.get('/tax-submissions', async (req, res) => {

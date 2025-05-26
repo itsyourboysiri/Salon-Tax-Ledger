@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiSearch, FiEdit, FiTrash2 } from 'react-icons/fi';
 import TopAndSideBar from './Dashboard Components/sideBar';
 import EditUsers from './Dashboard Components/editUser';
+import { alert } from '../components/AlertBoxes/alertBox';
 
 const UsersPage = () => {
     const [userData, setUserData] = useState([]); // ✅ actual fetched data
@@ -10,6 +11,8 @@ const UsersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editUser, setEditUser] = useState(null);
     const [loadingUser, setLoadingUser] = useState(false);
+
+
 
     // ✅ Fetch data on mount
     useEffect(() => {
@@ -60,10 +63,10 @@ const UsersPage = () => {
 
             // Remove the user from the state
             setUserData((prev) => prev.filter((user) => user.TINnumber !== tin));
-            alert('User deleted successfully!');
+            alert.success('User deleted successfully!');
         } catch (error) {
             console.error('Delete failed:', error);
-            alert('An error occurred while deleting the user.');
+            alert.error('An error occurred while deleting the user.');
         }
     };
 
@@ -85,7 +88,7 @@ const UsersPage = () => {
             setEditUser(parsedUser);
         } catch (error) {
             console.error(error);
-            alert('Failed to fetch user');
+            alert.error('Failed to fetch user');
         } finally {
             setLoadingUser(false);
         }
@@ -155,7 +158,7 @@ const UsersPage = () => {
     return (
         <TopAndSideBar>
             <div className="bg-white p-6 rounded-lg shadow-md w-full h-full border border-gray-200 flex flex-col overflow-hidden">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 flex-shrink-0">Users</h2>
+                <h2 className="text-xl font-semibold mb-4 text-[#41091B] flex-shrink-0">Users</h2>
 
                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -201,7 +204,7 @@ const UsersPage = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {currentData.length > 0 ? (
                                 currentData.map((row, index) => (
-                                    <tr key={index} className="hover:bg-gray-50">
+                                    <tr key={index} className="hover:bg-[#f8f0e7]">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.TINnumber}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                             <div className="flex items-center space-x-3">
