@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, Eye, CheckCircle2, XCircle } from 'lucide-react';
 import TopAndSideBar from './Dashboard Components/sideBar';
 import TaxDetailsModal from './Dashboard Components/taxDetailsModel';
+import { alert } from '../components/AlertBoxes/alertBox';
 
 export default function TaxInformation() {
   const [entries, setEntries] = useState([]);
@@ -10,12 +11,24 @@ export default function TaxInformation() {
   const [selectedTaxData, setSelectedTaxData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const[adminUsername,setUsername] = useState('')
+
+
 
   useEffect(() => {
+    const adminSession = localStorage.getItem('adminSession') ;
+    const adminUsernameData = JSON.parse(adminSession);
+    const adminUsername = adminUsernameData?.admin?.username || '';
+    setUsername(adminUsername);
     setIsLoading(true);
     fetch('http://localhost:5000/api/admin/tax-submissions')
       .then((res) => res.json())
-      .then((data) => setEntries(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const sortedData = Array.isArray(data)
+          ? data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+          : [];
+        setEntries(sortedData);
+      })
       .catch((err) => {
         console.error('Error fetching tax submissions:', err);
         setError(err.message);
@@ -39,39 +52,58 @@ export default function TaxInformation() {
     try {
       const res = await fetch(`http://localhost:5000/api/admin/confirm-taxsubmission/${id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json', // Add headers
+        },
+        body: JSON.stringify({
+          sendNotification: true,
+          notificationMessage: 'Your tax submission has been approved. You can now proceed with payment.',
+          adminUsername
+        })
       });
-
+  
       if (!res.ok) throw new Error('Failed to confirm submission');
-
+  
       const updatedEntries = entries.map((entry) =>
         entry._id === id ? { ...entry, status: 'confirmed' } : entry
       );
       setEntries(updatedEntries);
-
-      alert('Submission confirmed. User can now proceed with payment.');
+  
+      alert.success('Submission confirmed. User has been notified.');
     } catch (err) {
       console.error('Error confirming submission:', err);
-      alert('Failed to confirm submission.');
+      alert.error('Failed to confirm submission.');
     }
   };
-
+  
   const handleDeclineClick = async (id) => {
     try {
+      const declineReason = prompt('Please enter the reason for declining this submission:');
+      if (!declineReason) return; // Exit if no reason provided
+  
       const res = await fetch(`http://localhost:5000/api/admin/decline-taxsubmission/${id}`, {
         method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sendNotification: true,
+          notificationMessage: `Your tax submission has been declined. Reason: ${declineReason}`,
+          declineReason,
+          adminUsername
+        })
       });
-
+  
       if (!res.ok) throw new Error('Failed to decline submission');
-
+  
       const updatedEntries = entries.map((entry) =>
         entry._id === id ? { ...entry, status: 'declined' } : entry
       );
       setEntries(updatedEntries);
-
-      alert('Submission declined.');
+  
+      alert.success('Submission declined. User has been notified.');
     } catch (err) {
-      console.error('Error declining submission:', err);
-      alert('Failed to decline submission.');
+      alert.error('Failed to decline submission.');
     }
   };
 
@@ -122,7 +154,7 @@ export default function TaxInformation() {
     <div className="bg-gray-50 min-h-screen">
       <TopAndSideBar>
         <div className="container mx-auto">
-          <h1 className="text-xl font-semibold text-gray-800 mb-6">Tax Information</h1>
+          <h1 className="text-xl font-semibold text-[#41091B] mb-6">Tax Information</h1>
 
           <div className="bg-white rounded-lg shadow">
             <div className="p-6">
@@ -156,7 +188,7 @@ export default function TaxInformation() {
                   </thead>
                   <tbody>
                     {filteredEntries.map((entry, idx) => (
-                      <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                      <tr key={idx} className="border-b border-gray-200 hover:bg-[#f8f0e7]">
                         <td className="py-3 px-4">{entry.name}</td>
                         <td className="py-3 px-4">{entry.salonName}</td>
                         <td className="py-3 px-4">LKR {Number(entry.balancePayable).toLocaleString()}</td>

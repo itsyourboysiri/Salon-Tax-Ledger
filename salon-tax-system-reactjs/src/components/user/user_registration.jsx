@@ -1,98 +1,145 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { alert } from '../AlertBoxes/alertBox';
+import { FaCamera, FaUpload } from 'react-icons/fa';
 
 const UserRegistrationForm = () => {
   const navigate = useNavigate();
   const [stories, setStories] = useState(1);
+  const [profileImage, setProfileImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [areas, setAreas] = useState([0]);
 
-  const increaseStories = () => setStories((prev) => prev + 1);
-  const decreaseStories = () => setStories((prev) => (prev > 1 ? prev - 1 : 1));
+  const increaseStories = () => {
+    setStories(prev => prev + 1);
+    setAreas(prev => [...prev, 0]);
+  };
+
+  const decreaseStories = () => {
+    if (stories > 1) {
+      setStories(prev => prev - 1);
+      setAreas(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleAreaChange = (index, value) => {
+    const newAreas = [...areas];
+    newAreas[index] = Number(value);
+    setAreas(newAreas);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     const form = event.target;
-    const userRegformData = new FormData(form);
-    const userregdata = Object.fromEntries(userRegformData.entries());
+    const formData = new FormData(form);
 
-    const phone = userregdata.phone?.trim();
-    const password = userregdata.password?.trim();
-    const email = userregdata.email?.trim();
-    const nic = userregdata.nic?.trim();
-    const tin = userregdata.tinno?.trim();
-    const confirmPassword = userregdata.confirmPassword?.trim();
-    const areaInputs = form.querySelectorAll(".areaInput");
+    // Get all form values
+    const formValues = Object.fromEntries(formData.entries());
+    const { phone, password, email, nic, tinno, confirmPassword } = formValues;
 
+    // Validation checks
     const oldNICPattern = /^[0-9]{9}[VXvx]$/;
     const newNICPattern = /^[0-9]{12}$/;
     if (!oldNICPattern.test(nic) && !newNICPattern.test(nic)) {
-      alert("Invalid NIC format (e.g., 123456789V or 200012345678)");
+      alert.error("Invalid NIC format (e.g., 123456789V or 200012345678)");
       return;
     }
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
-      alert("Please enter a valid email address.");
+      alert.error("Please enter a valid email address.");
       return;
     }
 
-    if (!/^[0-9]+$/.test(tin)) {
-      alert("TIN should only contain numbers");
+    if (!/^[0-9]+$/.test(tinno)) {
+      alert.error("TIN should only contain numbers");
       return;
     }
 
     if (!/^0[1-9]\d{8}$/.test(phone)) {
-      alert("Invalid Sri Lankan phone number (e.g., 0712345678 or 0112345678)");
+      alert.error("Invalid Sri Lankan phone number (e.g., 0712345678 or 0112345678)");
       return;
     }
 
     if (password.length < 6 || !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      alert("Password must be at least 6 characters long and contain at least one special character.");
+      alert.error("Password must be at least 6 characters long and contain at least one special character.");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      alert.error("Passwords do not match!");
       return;
     }
 
-    for (let input of areaInputs) {
-      if (isNaN(input.value) || Number(input.value) <= 0) {
-        alert("Salon area must be a positive number.");
-        return;
-      }
+    // Check area values
+    if (areas.some(area => isNaN(area) || area <= 0)) {
+      alert.error("Salon area must be a positive number.");
+      return;
     }
 
-    userregdata.stories = stories;
-    userregdata.area = Array.from(areaInputs).map((input) => Number(input.value));
+    // Prepare the data to send
+    const userData = {
+      ...formValues,
+      stories,
+      area: areas,
+    };
+
+    // Create FormData for file upload
+    const finalFormData = new FormData();
+    Object.entries(userData).forEach(([key, value]) => {
+      if (key !== 'profileImage') {
+        finalFormData.append(key, value);
+      }
+    });
+    
+    if (profileImage) {
+      finalFormData.append('profileImage', profileImage);
+    }
 
     try {
       const response = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userregdata)
+        body: finalFormData,
       });
 
-      if (!response.ok) throw new Error("Registration failed!");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed!");
+      }
 
       const result = await response.json();
-      alert(result.message);
+      alert.success("Registration successful!");
       navigate("/");
     } catch (error) {
       console.error("Error registering user:", error);
-      alert("Registration failed!");
+      alert.error(error.message || "Registration failed!");
     }
   };
 
   const generateAreaInputs = () => (
-    <div>
-      {[...Array(stories)].map((_, index) => (
+    <div className="space-y-2">
+      {areas.map((area, index) => (
         <input
           key={index}
           type="number"
-          name={`area${index}`}
+          value={area}
+          onChange={(e) => handleAreaChange(index, e.target.value)}
           className="areaInput w-full mt-1 p-2 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#986611]"
-          placeholder={`Area of Story ${index + 1}`}
+          placeholder={`Area of Story ${index + 1} (sq ft)`}
+          required
+          min="1"
         />
       ))}
     </div>
@@ -108,9 +155,34 @@ const UserRegistrationForm = () => {
 
       {/* Form container */}
       <div className="relative z-10 w-full max-w-md sm:max-w-lg lg:max-w-xl p-6 sm:p-8 bg-[#FFFDF8] text-[#1E040C] rounded-2xl shadow-2xl animate-fadeIn">
-
-        <h2 className="text-2xl font-bold text-center text-[#986611] mb-6">User Registration</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="text-2xl font-bold text-center text-[#620F28] mb-6">User Registration</h2>
+        <div className="flex justify-center mb-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-[#620F28]">
+              {imagePreview ? (
+                <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <FaCamera className="text-3xl text-gray-400" />
+              )}
+            </div>
+            <label 
+              htmlFor="profileImage"
+              className="absolute -bottom-2 -right-2 bg-[#620F28] text-white p-2 rounded-full cursor-pointer hover:bg-[#986611] transition"
+              title="Upload profile image"
+            >
+              <FaCamera className="text-sm" />
+              <input
+                type="file"
+                id="profileImage"
+                name="profileImage"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
           {/* Personal Info */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium">Full Name</label>
@@ -136,6 +208,10 @@ const UserRegistrationForm = () => {
             <label htmlFor="tinno" className="block text-sm font-medium">TIN Number</label>
             <input type="text" id="tinno" name="tinno" required className="w-full mt-1 p-2 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#986611]" />
           </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <input type="email" id="email" name="email" required className="w-full mt-1 p-2 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#986611]" />
+          </div>
 
           {/* Salon Details */}
           <h2 className="text-xl font-semibold text-left text-[#620F28] mt-6">Salon Details</h2>
@@ -151,7 +227,7 @@ const UserRegistrationForm = () => {
             <label className="block text-sm font-medium">How many stories in the salon?</label>
             <div className="flex items-center space-x-2 mt-2">
               <button type="button" onClick={decreaseStories} className="p-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300">-</button>
-              <input type="text" id="stories" name="stories" value={stories} readOnly className="w-16 text-center p-2 bg-white text-black border border-gray-300 rounded-lg" />
+              <input type="text" value={stories} readOnly className="w-16 text-center p-2 bg-white text-black border border-gray-300 rounded-lg" />
               <button type="button" onClick={increaseStories} className="p-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300">+</button>
             </div>
           </div>
@@ -165,10 +241,6 @@ const UserRegistrationForm = () => {
           <div>
             <label htmlFor="username" className="block text-sm font-medium">Username</label>
             <input type="text" id="username" name="username" required className="w-full mt-1 p-2 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#986611]" />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">Email</label>
-            <input type="email" id="email" name="email" required className="w-full mt-1 p-2 bg-white text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#986611]" />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium">Password</label>

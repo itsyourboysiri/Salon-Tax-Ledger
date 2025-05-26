@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const TaxForm = require('../../taxForm/taxForm Modal/taxFormModal'); // Adjust path as needed
+const TaxForm = require('../../taxForm/taxForm Modal/TaxFormModal'); // Adjust path as needed
 
 // GET a specific tax submission by ID
 router.get('/fetch-taxsubmission/:id', async (req, res) => {

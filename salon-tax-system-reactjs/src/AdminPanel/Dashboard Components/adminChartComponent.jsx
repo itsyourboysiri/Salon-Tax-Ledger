@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -12,16 +12,43 @@ import {
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
-const YearlyTaxReportChart = ({ data }) => {
+const YearlyTaxReportChart = () => {
+  const [data, setData] = useState([]);
   const [viewMode, setViewMode] = useState("revenue");
   const [selectedYear, setSelectedYear] = useState("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const availableYears = [...new Set(data.map((d) => d.year))];
+
+  // Fetch the data
+  const fetchYearlyData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:5000/api/admin/yearly-tax-report');
+      if (!response.ok) {
+        throw new Error('Failed to fetch yearly tax data');
+      }
+      const fetchedData = await response.json();
+      setData(fetchedData);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching yearly data:', err);
+      setError(err.message);
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchYearlyData();
+  }, []);
 
   const filteredData =
     selectedYear === "all"
       ? data
-      : data.filter((d) => d.year === selectedYear);
+      : data.filter((d) => d.year === parseInt(selectedYear));
 
   const labels = filteredData.map((item) => item.year);
 
@@ -34,7 +61,7 @@ const YearlyTaxReportChart = ({ data }) => {
             {
               label: "Tax Collected (LKR)",
               data: filteredData.map((item) => item.taxCollected),
-              backgroundColor: "#EF4444",
+              backgroundColor: "#620F28 ",
             },
           ],
         };
@@ -61,7 +88,7 @@ const YearlyTaxReportChart = ({ data }) => {
             {
               label: "Total Submissions",
               data: filteredData.map((item) => item.totalSubmissions),
-              backgroundColor: "#FACC15",
+              backgroundColor: "#684E12",
             },
           ],
         };
@@ -82,7 +109,7 @@ const YearlyTaxReportChart = ({ data }) => {
           submissions: "📦 Total Tax Submissions",
         }[viewMode],
         font: { size: 18, weight: "bold" },
-        color: "#1F2937",
+        color: "#986611",
       },
     },
     scales: {
@@ -96,6 +123,36 @@ const YearlyTaxReportChart = ({ data }) => {
     },
   };
 
+  if (isLoading) {
+    return (
+      <div className="bg-white shadow-lg border border-red-100 rounded-xl p-6 max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Loading yearly tax data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white shadow-lg border border-red-100 rounded-xl p-6 max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">Error loading data: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="bg-white shadow-lg border border-red-100 rounded-xl p-6 max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">No tax data available</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white shadow-lg border border-red-100 rounded-xl p-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
@@ -103,7 +160,7 @@ const YearlyTaxReportChart = ({ data }) => {
           <button
             className={`px-4 py-2 rounded-md font-medium ${
               viewMode === "revenue"
-                ? "bg-red-500 text-white"
+                ? "bg-red-900 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
             onClick={() => setViewMode("revenue")}
@@ -113,7 +170,7 @@ const YearlyTaxReportChart = ({ data }) => {
           <button
             className={`px-4 py-2 rounded-md font-medium ${
               viewMode === "breakdown"
-                ? "bg-yellow-400 text-white"
+                ? "bg-yellow-800 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
             onClick={() => setViewMode("breakdown")}
@@ -123,7 +180,7 @@ const YearlyTaxReportChart = ({ data }) => {
           <button
             className={`px-4 py-2 rounded-md font-medium ${
               viewMode === "submissions"
-                ? "bg-rose-500 text-white"
+                ? "bg-rose-900 text-white"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
             onClick={() => setViewMode("submissions")}
@@ -137,11 +194,11 @@ const YearlyTaxReportChart = ({ data }) => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 "
           >
-            <option value="all">All Years</option>
+            <option value="all" >All Years</option>
             {availableYears.map((year) => (
-              <option key={year} value={year}>
+              <option key={year} value={year} className="hover:bg-yellow-300">  
                 {year}
               </option>
             ))}

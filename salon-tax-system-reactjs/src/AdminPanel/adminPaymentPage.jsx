@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import TopAndSideBar from "./Dashboard Components/sideBar";
+import { alert } from '../../src/components/AlertBoxes/alertBox';
 
 const AdminPaymentsPage = () => {
   const [payments, setPayments] = useState([]);
   const [pendingPayments, setPendingPayments] = useState([]);
   const [expandedPaymentId, setExpandedPaymentId] = useState(null);
   const [paymentTypeFilter, setPaymentTypeFilter] = useState("full");
+  const [notifyingUsers, setNotifyingUsers] = useState(new Set()); // Track which users are being notified
 
   useEffect(() => {
     fetchPayments();
@@ -31,12 +33,46 @@ const AdminPaymentsPage = () => {
       const res = await fetch('http://localhost:5000/api/admin/pending-payments');
       const data = await res.json();
       if (res.ok) {
+        console.log("Pending Payments Data:", data);
         setPendingPayments(data);
       } else {
         console.error("Failed to fetch pending payments");
       }
     } catch (error) {
       console.error("Error fetching pending payments:", error);
+    }
+  };
+
+  const handleNotifyUser = async (username, pendingId) => {
+    // Add user to notifying set to show loading state
+    setNotifyingUsers(prev => new Set([...prev, pendingId]));
+
+    try {
+      const res = await fetch('http://localhost:5000/api/admin/notify-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert.success(`Email notification sent successfully to ${username}!`);
+      } else {
+        alert.error(`Failed to send notification: ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      alert.error("Error sending notification. Please try again.");
+    } finally {
+      // Remove user from notifying set
+      setNotifyingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(pendingId);
+        return newSet;
+      });
     }
   };
 
@@ -97,7 +133,7 @@ const AdminPaymentsPage = () => {
                     <React.Fragment key={payment._id}>
                       <tr
                         onClick={() => setExpandedPaymentId(expandedPaymentId === payment._id ? null : payment._id)}
-                        className="hover:bg-gray-50 cursor-pointer transition"
+                        className="hover:bg-[#f8f0e7] cursor-pointer transition"
                       >
                         <td className="px-6 py-4">{payment.username}</td>
                         <td className="px-6 py-4">{payment.name}</td>
@@ -132,7 +168,7 @@ const AdminPaymentsPage = () => {
                                   </thead>
                                   <tbody className="divide-y divide-gray-200">
                                     {payment.installmentPaid.map((inst, index) => (
-                                      <tr key={index} className="hover:bg-gray-50">
+                                      <tr key={index} className="hover:bg-[#f8f0e7]">
                                         <td className="px-4 py-2 font-medium">Q{inst.quarter}</td>
                                         <td className="px-4 py-2">
                                           LKR {Number(inst.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -177,6 +213,7 @@ const AdminPaymentsPage = () => {
                   <th className="px-6 py-3 text-left font-semibold">Tax Year</th>
                   <th className="px-6 py-3 text-left font-semibold">Balance Payable</th>
                   <th className="px-6 py-3 text-left font-semibold">Status</th>
+                  <th className="px-6 py-3 text-left font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -186,7 +223,7 @@ const AdminPaymentsPage = () => {
                       <td className="px-6 py-4">{pending.username}</td>
                       <td className="px-6 py-4">{pending.name}</td>
                       <td className="px-6 py-4">{pending.salonName}</td>
-                      <td className="px-6 py-4">{pending.taxYear}</td>
+                      <td className="px-6 py-4">2025/2026</td>
                       <td className="px-6 py-4">
                         LKR {Number(pending.balancePayable).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
@@ -195,11 +232,24 @@ const AdminPaymentsPage = () => {
                           Pending
                         </span>
                       </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleNotifyUser(pending.username, pending._id)}
+                          disabled={notifyingUsers.has(pending._id)}
+                          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                            notifyingUsers.has(pending._id)
+                              ? 'bg-gray-400 text-white cursor-not-allowed'
+                              : 'bg-[#986611] text-white hover:bg-[#684E12]'
+                          }`}
+                        >
+                          {notifyingUsers.has(pending._id) ? 'Sending...' : 'Notify User'}
+                        </button>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="p-6 text-center text-gray-400">
+                    <td colSpan="7" className="p-6 text-center text-gray-400">
                       No pending payments found.
                     </td>
                   </tr>

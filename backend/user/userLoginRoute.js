@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
         }
 
         // ✅ Return only required fields
-        const { name, salonName, TINnumber,email } = user;
+        const { name, salonName, TINnumber,email,photo } = user;
 
         res.json({
             message: 'Login successful',
@@ -30,7 +30,8 @@ router.post('/', async (req, res) => {
                 name,
                 salonName,
                 tinNumber:TINnumber,
-                email
+                email,
+                photo
             }
         });
 

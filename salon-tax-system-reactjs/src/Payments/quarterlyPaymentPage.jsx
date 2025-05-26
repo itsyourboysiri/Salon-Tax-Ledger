@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { alert } from "../components/AlertBoxes/alertBox";
 
 const QuarterlyPaymentsPage = () => {
   const { submissionId } = useParams();
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+
 
   const email = sessionStorage.getItem('email');
   const paymentId = submission.paymentId
@@ -118,14 +121,14 @@ const QuarterlyPaymentsPage = () => {
       
       if (result.success) {
         setPaymentSuccess(true);
-        alert("Payment successful! Your payment record has been updated.");
+        alert.success("Payment successful! Your payment record has been updated.");
       } else {
         console.error("Failed to update payment record:", result.message);
-        alert("Payment was successful, but we couldn't update your records. Please contact support.");
+        alert.error("Payment was successful, but we couldn't update your records. Please contact support.");
       }
     } catch (err) {
       console.error("Error updating payment record:", err);
-      alert("An error occurred while updating your payment record. Please contact support.");
+      alert.error("An error occurred while updating your payment record. Please contact support.");
     } finally {
       setLoading(false);
     }

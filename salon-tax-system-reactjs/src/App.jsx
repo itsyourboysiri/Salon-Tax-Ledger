@@ -25,6 +25,8 @@ import PaymentHistoryPage from "./Payments/paymentHistoryPage";
 import AdminPaymentsPage from "./AdminPanel/adminPaymentPage";
 import TaxChartPage from "./reports/reportPage";
 import ReportPage from "./AdminPanel/adminReportPage";
+import AdminLogin from "./AdminPanel/AdminSignupAndLogin/adminLogin";
+import AdminSignup from "./AdminPanel/AdminSignupAndLogin/adminSignUp";
 
 
 function App() {
@@ -52,6 +54,8 @@ function App() {
           <Route path="/admin-payments" element={<AdminPaymentsPage/>} />
           <Route path="/taxgraphs" element={<TaxChartPage/>} />
           <Route path="/admin-taxgraphs" element={<ReportPage/>} />
+          <Route path="/admin-login" element={<AdminLogin/>} />
+          <Route path="/admin-signup" element={<AdminSignup/>} />
 
           
       </Routes>

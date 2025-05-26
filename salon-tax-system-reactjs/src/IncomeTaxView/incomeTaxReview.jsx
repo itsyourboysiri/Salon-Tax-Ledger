@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar/navbar';
 import QuarterlyPayment from '../Payments/quaterlyPayment';
+import { alert } from '../components/AlertBoxes/alertBox';
 
 
 
@@ -50,6 +51,7 @@ const IncomeTaxReview = () => {
     console.log("Quaterly payment:", quarterlyAmount)
 
 
+
     const donationLabels = {
         charity: "Donate to approved Charity (The lower of 1/3 of the taxable income or 75,000/=) (Entity 1/5 or 500,000/=)",
         government: "Donations to Government or other specified institutions",
@@ -84,18 +86,18 @@ const IncomeTaxReview = () => {
             const result = await response.json();
 
             if (response.ok) {
-                alert("Tax form submitted successfully!");
+                alert.success("Tax form submitted successfully!");
 
                 console.log("Backend response:", result);
 
                 
                 navigate("/taxview");
             } else {
-                alert("Submission failed. Try again.");
+                alert.error("Submission failed. Try again.");
             }
         } catch (error) {
             console.error("Submission error:", error);
-            alert("Server error occurred while submitting the form.");
+            alert.error("Server error occurred while submitting the form.");
         } finally {
             setSubmitting(false);
         }

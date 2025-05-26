@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
  require('./mongodb'); 
+ const path = require('path');
 
 const userRegRoutes = require('./user/userRegistrationRoute')
 const userLoginRoutes = require('./user/userLoginRoute')
@@ -19,6 +20,8 @@ const getPaymentRoutes = require('./Payment/getPayment')
 const updateQuaterlyPaymentRoutes = require('./Payment/updateQuaterlyPayment')
 const paymentHistoryRoutes = require('./Payment/paymentHistory')
 
+const reportDataRoutes = require('./Reports/getDataForReports')
+
 const retrieveUserRoutes = require('./AdminBackend/Admin-user/retrieveUserDetails')
 const updateUserRoutes = require('./AdminBackend/Admin-user/updateUser')
 const getUserByTinRoutes = require('./AdminBackend/Admin-user/retireveUserByTin')
@@ -30,6 +33,15 @@ const declineTaxFormRoutes = require('./AdminBackend/Admin-TaxInformation/declin
 const getTaxFormRByIdoutes = require('./taxView/taxViewById')
 const getAdminPaymentRoutes = require('./AdminBackend/Admin-Payments/getAllPayments')
 const getPendingPaymentRoutes = require('./AdminBackend/Admin-Payments/pendingPayments')
+const adminSignInRoutes = require('./AdminBackend/AdminSignUpAndLogin/adminSignIn')
+const adminSignUpRoutes = require('./AdminBackend/AdminSignUpAndLogin/adminSignUp')
+const adminUpdateProfileRoutes = require('./AdminBackend/Admin-user/adminUserUpdateProfile')
+
+const getNotificationRoutes = require('./Notifications/getNotifications')
+const getUserNotificationRoutes = require('./Notifications/getNotificationForUser')
+const sendSMSNotificationForUserRoutes = require('./Notifications/sendingSMS')
+
+const getYearlyTaxReportRoutes = require('./AdminBackend/Admin-TaxInformation/getYearlyTaxReport')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,9 +53,10 @@ app.use(
     credentials: true, // ✅ allow cookies, credentials, etc.
   })
 );
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static( path.join(__dirname, './user/public/useruploads')));
 
 
 app.use((req, res, next) => {
@@ -56,6 +69,7 @@ app.use((req, res, next) => {
 app.use("/api/users/register", userRegRoutes);
 app.use("/api/users/login", userLoginRoutes);
 app.use("/api/users", taxFormInsertionRoutes);
+app.use("/api/users", getUserNotificationRoutes); 
 app.use("/api/users", taxViewRoutes);
 app.use("/api/users", taxPaymentRoutes);
 app.use("/api/users", payHereHashRoutes);
@@ -70,7 +84,11 @@ app.use("/api/users", getTaxFormRByIdoutes);
 app.use("/api/users", getPaymentRoutes); 
 app.use("/api/users", updateQuaterlyPaymentRoutes); 
 app.use("/api/users", paymentHistoryRoutes); 
+app.use("/api/users", reportDataRoutes); 
 
+app.use("/api/admin", getPendingPaymentRoutes);
+app.use("/api/admin", getYearlyTaxReportRoutes);
+app.use("/api/admin", getNotificationRoutes);
 app.use("/api/admin", retrieveTaxFilesRoutes); 
 app.use("/api/admin", retrieveUserRoutes);
 app.use("/api/admin", updateUserRoutes);
@@ -79,8 +97,15 @@ app.use("/api/admin", getUserByTinRoutes);
 app.use("/api/admin", deleteUserByTinRoutes);
 app.use("/api/admin", retrieveTaxFilesByIdRoutes);
 app.use("/api/admin", confirmTaxFormRoutes);
-app.use("/api/admin", getPendingPaymentRoutes);
+app.use("/api/admin",sendSMSNotificationForUserRoutes );
 app.use("/api/admin", declineTaxFormRoutes);
+app.use("/api/admin", declineTaxFormRoutes);
+app.use("/api/admin", adminSignInRoutes);
+app.use("/api/admin", adminSignUpRoutes);
+app.use("/api/admin", adminUpdateProfileRoutes);
+
+
+
 
 
 
