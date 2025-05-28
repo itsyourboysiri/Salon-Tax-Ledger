@@ -7,11 +7,11 @@ const TaxLiability = ({ taxableIncome, setTaxLiable,setTaxCreditsData,capitalGai
 
   const calculateSlabTax = (taxableIncome) => {
     const slabs = [
-      { limit: 999996, rate: 0.06 },
-      { limit: 499992, rate: 0.18 },
-      { limit: 499992, rate: 0.24 },
-      { limit: 499992, rate: 0.30 },
-      { limit: 799992, rate: 0.36 },
+      { limit: 500000, rate: 0.06 },
+      { limit: 500000, rate: 0.12 },
+      { limit: 500000, rate: 0.18 },
+      { limit: 500000, rate: 0.24 },
+      { limit: 500000, rate: 0.30 },
       { limit: Infinity, rate: 0.36 }
     ];
 
