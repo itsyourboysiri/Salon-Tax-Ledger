@@ -147,7 +147,7 @@ const clearNotifications = async () => {
                 <Grid size={18} />
                 {!isCollapsed && <span className="ml-2">Dashboard</span>}
               </div>
-              {!isCollapsed && location.pathname === "/admin-home" && <ChevronUp size={16} />}
+             
             </div>
           </Link>
 
